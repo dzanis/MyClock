@@ -20,30 +20,34 @@ import java.io.IOException;
 
 import javax.swing.*;
 
-import java.util.Date;
+import java.security.CodeSource;
+import java.sql.Date;
+import java.util.Calendar;
 import java.util.Properties;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.net.URL;
 import javax.sound.sampled.*;
 
 /**
  *
  * @author zanis  28.05.2013
- * ×àñû ïğåäíàçíà÷åíû äëÿ âûêëş÷åíèÿ êîìïüşòåğà ïîñëå ïîëóíî÷è äî 8-ìè óòğà.
- * ×åğåç êàæäûå äâà ÷àñà ïîÿâèòñÿ äèàëîã,ïğåäóïğåæäàşùèé îá âûêëş÷åíèè.
- * Åñëè îòìåíèòü âûêëş÷åíèå òî âûêëş÷åíèå îòñğî÷èòñÿ íà òåõ æå äâà ÷àñà.
- * ×àñû ìîæíî ïåğåìåøàòü ïî ğàáî÷åìó ñòîëó çàæàâ ËÊÌ.
- * Òàê æå äîñòóïíû äğóãèå ôóíêöèè :
- * Äëÿ ıòîãî íóæíî íàâåñòè ìûøü íà ÷àñû è íàæàòü ÏÊÌ
- * Seconds Show - ïîêàçûâàòü ñåêóíäíóş ñòğåëêó (îò ıòîãî çàâèñèò êàêàÿ çàäåğæêà sleep)
- * Exit - çàêğûòü ÷àñû
- * Shutdown - çàïóñòèòü òàéìåğ âûêëş÷åíèÿ
+ * Ğ§Ğ°ÑÑ‹ Ğ¿Ñ€ĞµĞ´Ğ½Ğ°Ğ·Ğ½Ğ°Ñ‡ĞµĞ½Ñ‹ Ğ´Ğ»Ñ Ğ²Ñ‹ĞºĞ»ÑÑ‡ĞµĞ½Ğ¸Ñ ĞºĞ¾Ğ¼Ğ¿ÑŒÑÑ‚ĞµÑ€Ğ° Ğ¿Ğ¾ÑĞ»Ğµ Ğ¿Ğ¾Ğ»ÑƒĞ½Ğ¾Ñ‡Ğ¸ Ğ´Ğ¾ 8-Ğ¼Ğ¸ ÑƒÑ‚Ñ€Ğ°.
+ * Ğ§ĞµÑ€ĞµĞ· ĞºĞ°Ğ¶Ğ´Ñ‹Ğµ Ğ´Ğ²Ğ° Ñ‡Ğ°ÑĞ° Ğ¿Ğ¾ÑĞ²Ğ¸Ñ‚ÑÑ Ğ´Ğ¸Ğ°Ğ»Ğ¾Ğ³,Ğ¿Ñ€ĞµĞ´ÑƒĞ¿Ñ€ĞµĞ¶Ğ´Ğ°ÑÑ‰Ğ¸Ğ¹ Ğ¾Ğ± Ğ²Ñ‹ĞºĞ»ÑÑ‡ĞµĞ½Ğ¸Ğ¸.
+ * Ğ•ÑĞ»Ğ¸ Ğ¾Ñ‚Ğ¼ĞµĞ½Ğ¸Ñ‚ÑŒ Ğ²Ñ‹ĞºĞ»ÑÑ‡ĞµĞ½Ğ¸Ğµ Ñ‚Ğ¾ Ğ²Ñ‹ĞºĞ»ÑÑ‡ĞµĞ½Ğ¸Ğµ Ğ¾Ñ‚ÑÑ€Ğ¾Ñ‡Ğ¸Ñ‚ÑÑ Ğ½Ğ° Ñ‚ĞµÑ… Ğ¶Ğµ Ğ´Ğ²Ğ° Ñ‡Ğ°ÑĞ°.
+ * Ğ§Ğ°ÑÑ‹ Ğ¼Ğ¾Ğ¶Ğ½Ğ¾ Ğ¿ĞµÑ€ĞµĞ¼ĞµÑˆĞ°Ñ‚ÑŒ Ğ¿Ğ¾ Ñ€Ğ°Ğ±Ğ¾Ñ‡ĞµĞ¼Ñƒ ÑÑ‚Ğ¾Ğ»Ñƒ Ğ·Ğ°Ğ¶Ğ°Ğ² Ğ›ĞšĞœ.
+ * Ğ¢Ğ°Ğº Ğ¶Ğµ Ğ´Ğ¾ÑÑ‚ÑƒĞ¿Ğ½Ñ‹ Ğ´Ñ€ÑƒĞ³Ğ¸Ğµ Ñ„ÑƒĞ½ĞºÑ†Ğ¸Ğ¸ :
+ * Ğ”Ğ»Ñ ÑÑ‚Ğ¾Ğ³Ğ¾ Ğ½ÑƒĞ¶Ğ½Ğ¾ Ğ½Ğ°Ğ²ĞµÑÑ‚Ğ¸ Ğ¼Ñ‹ÑˆÑŒ Ğ½Ğ° Ñ‡Ğ°ÑÑ‹ Ğ¸ Ğ½Ğ°Ğ¶Ğ°Ñ‚ÑŒ ĞŸĞšĞœ
+ * Seconds Show - Ğ¿Ğ¾ĞºĞ°Ğ·Ñ‹Ğ²Ğ°Ñ‚ÑŒ ÑĞµĞºÑƒĞ½Ğ´Ğ½ÑƒÑ ÑÑ‚Ñ€ĞµĞ»ĞºÑƒ (Ğ¾Ñ‚ ÑÑ‚Ğ¾Ğ³Ğ¾ Ğ·Ğ°Ğ²Ğ¸ÑĞ¸Ñ‚ ĞºĞ°ĞºĞ°Ñ Ğ·Ğ°Ğ´ĞµÑ€Ğ¶ĞºĞ° sleep)
+ * Exit - Ğ·Ğ°ĞºÑ€Ñ‹Ñ‚ÑŒ Ñ‡Ğ°ÑÑ‹
+ * Shutdown - Ğ·Ğ°Ğ¿ÑƒÑÑ‚Ğ¸Ñ‚ÑŒ Ñ‚Ğ°Ğ¹Ğ¼ĞµÑ€ Ğ²Ñ‹ĞºĞ»ÑÑ‡ĞµĞ½Ğ¸Ñ
  * 
- * Ïîëîæåíèå ÷àñîâ ñîõğàíÿåòñÿ â ôàéë MyClock.properties â user.home (íàïğèìåğ C:\Users\zanis\MyClock.properties)
+ * ĞŸĞ¾Ğ»Ğ¾Ğ¶ĞµĞ½Ğ¸Ğµ Ñ‡Ğ°ÑĞ¾Ğ² ÑĞ¾Ñ…Ñ€Ğ°Ğ½ÑĞµÑ‚ÑÑ Ğ² Ñ„Ğ°Ğ¹Ğ» MyClock.properties Ğ² user.home (Ğ½Ğ°Ğ¿Ñ€Ğ¸Ğ¼ĞµÑ€ C:\Users\zanis\MyClock.properties)
  * 
 
  */
 
-public class MainFrame extends JFrame implements ActionListener ,Runnable{ //Íàñëåäóÿ îò JFrame ìû ïîëó÷àåì âñş ôóíêöèîíàëüíîñòü îêíà
+public class MainFrame extends JFrame implements ActionListener { //ĞĞ°ÑĞ»ĞµĞ´ÑƒÑ Ğ¾Ñ‚ JFrame Ğ¼Ñ‹ Ğ¿Ğ¾Ğ»ÑƒÑ‡Ğ°ĞµĞ¼ Ğ²ÑÑ Ñ„ÑƒĞ½ĞºÑ†Ğ¸Ğ¾Ğ½Ğ°Ğ»ÑŒĞ½Ğ¾ÑÑ‚ÑŒ Ğ¾ĞºĞ½Ğ°
     
     
     /**
@@ -54,11 +58,11 @@ public class MainFrame extends JFrame implements ActionListener ,Runnable{ //Íàñ
 	/**
      * @param args the command line arguments
      */
-    public static void main(String[] args) { //ıòà ôóíêöèÿ ìîæåò áûòü è â äğóãîì êëàññå
+    public static void main(String[] args) { //ÑÑ‚Ğ° Ñ„ÑƒĞ½ĞºÑ†Ğ¸Ñ Ğ¼Ğ¾Ğ¶ĞµÑ‚ Ğ±Ñ‹Ñ‚ÑŒ Ğ¸ Ğ² Ğ´Ñ€ÑƒĞ³Ğ¾Ğ¼ ĞºĞ»Ğ°ÑÑĞµ
 
     	try
         {
-            // Óñòàíàâëèâàåì íàòèâíûé ñòèëü êîìïîíåíòîâ
+            // Ğ£ÑÑ‚Ğ°Ğ½Ğ°Ğ²Ğ»Ğ¸Ğ²Ğ°ĞµĞ¼ Ğ½Ğ°Ñ‚Ğ¸Ğ²Ğ½Ñ‹Ğ¹ ÑÑ‚Ğ¸Ğ»ÑŒ ĞºĞ¾Ğ¼Ğ¿Ğ¾Ğ½ĞµĞ½Ñ‚Ğ¾Ğ²
             UIManager.setLookAndFeel ( UIManager.getSystemLookAndFeelClassName () );
         }
         catch ( Throwable e )
@@ -66,11 +70,10 @@ public class MainFrame extends JFrame implements ActionListener ,Runnable{ //Íàñ
             //
         }
     	
-        new MainFrame(); //Ñîçäàåì ıêçåìïëÿğ íàøåãî ïğèëîæåíèÿ
+        new MainFrame(); //Ğ¡Ğ¾Ğ·Ğ´Ğ°ĞµĞ¼ ÑĞºĞ·ĞµĞ¼Ğ¿Ğ»ÑÑ€ Ğ½Ğ°ÑˆĞµĞ³Ğ¾ Ğ¿Ñ€Ğ¸Ğ»Ğ¾Ğ¶ĞµĞ½Ğ¸Ñ
 
     }
     
-   
     
     public static int WindowsXPos;
     public static int WindowsYPos;  
@@ -78,163 +81,70 @@ public class MainFrame extends JFrame implements ActionListener ,Runnable{ //Íàñ
     public static JPopupMenu popupMenu ; 
     
     
-    // êàğòèíêè ÷àñîâ
+    // ĞºĞ°Ñ€Ñ‚Ğ¸Ğ½ĞºĞ¸ Ñ‡Ğ°ÑĞ¾Ğ²
 	final ImageIcon trad = new ImageIcon(getClass().getResource("/trad.png"));
 	final ImageIcon trad_h = new ImageIcon(getClass().getResource("/trad_h.png"));
 	final ImageIcon trad_m = new ImageIcon(getClass().getResource("/trad_m.png"));
 	final ImageIcon trad_s = new ImageIcon(getClass().getResource("/trad_s.png"));
 	final ImageIcon trad_dot = new ImageIcon(getClass().getResource("/trad_dot.png"));
 	
-	// êàğòèíêè àíèìàöèé
-	// FIXME gif àíèìàöèÿ ãëş÷èò
+	// ĞºĞ°Ñ€Ñ‚Ğ¸Ğ½ĞºĞ¸ Ğ°Ğ½Ğ¸Ğ¼Ğ°Ñ†Ğ¸Ğ¹
+	// FIXME gif Ğ°Ğ½Ğ¸Ğ¼Ğ°Ñ†Ğ¸Ñ Ğ³Ğ»ÑÑ‡Ğ¸Ñ‚
 	final ImageIcon crazy = new ImageIcon(getClass().getResource("/crazy.gif"));
 	final ImageIcon bye = new ImageIcon(getClass().getResource("/bye.gif"));
 	final ImageIcon shok = new ImageIcon(getClass().getResource("/shok.gif"));
 	
  
-    final int DIALOG_START_TIME = 1000 * 60 * 60 * 2 ; // äâà ÷àñà 
-    final int BEFORE_SHUTDOWN_TIME = 1000 * 60  * 5 ; //  5 ìèíóò 
+    final int DIALOG_START_TIME = 1000 * 60 * 60 * 2 ; // Ğ´Ğ²Ğ° Ñ‡Ğ°ÑĞ° 
+    final int BEFORE_SHUTDOWN_TIME = 1000 * 60  * 5 ; //  5 Ğ¼Ğ¸Ğ½ÑƒÑ‚ 
     
     
-    Timer tDialog = new Timer(DIALOG_START_TIME, this);// òàéìåğ äëÿ äèàëîãà îá îòìåíå âûêëş÷åíèÿ
-    Timer tShutdown = new Timer(BEFORE_SHUTDOWN_TIME, this) ; // òàéìåğ  âûêëş÷åíèÿ
+    Timer tDialog = new Timer(DIALOG_START_TIME, this);// Ñ‚Ğ°Ğ¹Ğ¼ĞµÑ€ Ğ´Ğ»Ñ Ğ´Ğ¸Ğ°Ğ»Ğ¾Ğ³Ğ° Ğ¾Ğ± Ğ¾Ñ‚Ğ¼ĞµĞ½Ğµ Ğ²Ñ‹ĞºĞ»ÑÑ‡ĞµĞ½Ğ¸Ñ
+    Timer tShutdown = new Timer(BEFORE_SHUTDOWN_TIME, this) ; // Ñ‚Ğ°Ğ¹Ğ¼ĞµÑ€  Ğ²Ñ‹ĞºĞ»ÑÑ‡ĞµĞ½Ğ¸Ñ
    
     boolean  running = true;
-    Date date;
     int hours ,minutes , seconds ;
  
     
     public MainFrame() {
 
     	
-         super("My Clock"); //Çàãîëîâîê îêíà
+         super("My Clock"); //Ğ—Ğ°Ğ³Ğ¾Ğ»Ğ¾Ğ²Ğ¾Ğº Ğ¾ĞºĞ½Ğ°
+                 
+         Settings.load();// Ğ·Ğ°Ğ³Ñ€ÑƒĞ¶Ğ°Ñ Ğ¿Ñ€ĞµĞ´Ñ‹Ğ´ÑƒÑˆĞµĞµ Ğ¿Ğ¾Ğ»Ğ¾Ğ¶ĞµĞ½Ğ¸Ğµ Ğ¾ĞºĞ½Ğ°  
+ 
+         //getContentPane().add(clock);
         
-         
-         Settings.load();// çàãğóæàş ïğåäûäóøåå ïîëîæåíèå îêíà       
          initPopupMenu();
          
-      // TODO: äîáàâèòü â àâòîçàãğóçêó
+      // TODO: Ğ´Ğ¾Ğ±Ğ°Ğ²Ğ¸Ñ‚ÑŒ Ğ² Ğ°Ğ²Ñ‚Ğ¾Ğ·Ğ°Ğ³Ñ€ÑƒĞ·ĞºÑƒ
 
-        getContentPane().add(new JComponent() {
-            /**
-			 * 
-			 */
-			private static final long serialVersionUID = 1L;
-
-			{
-
-                 setForeground ( Color.BLACK );
-                MoveAdapter moveAdapter = new MoveAdapter();
-                addMouseListener(moveAdapter);
-                addMouseMotionListener(moveAdapter);
-            }
-            
-			// TODO õî÷ó paintComponent â îòäåëüíûé êëàññ
-            @SuppressWarnings("deprecation")
-			@Override
-            public void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            Graphics2D g2d = (Graphics2D) g;
-            RenderingHints rh = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            rh.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-            g2d.setRenderingHints(rh);
-
-            date = new Date();  // current time    
-
-            hours = date.getHours();
-            minutes = date.getMinutes();
-            seconds = date.getSeconds();
-            int drawLocationX = (this.getWidth() - trad_h.getIconWidth()) / 2;
-            int drawLocationY = 1;
-            int rotateLocationX = trad_h.getIconWidth() / 2;
-            int rotateLocationY = trad_h.getIconHeight() / 2;
-            AffineTransform at = new AffineTransform();
-
-            // ÷àñû
-            g2d.drawImage(trad.getImage(), 0, 0, null);
-
-            // ÷àñîâàÿ ñòğåëêà
-            at.setToTranslation(drawLocationX, drawLocationY); // position x,y
-            at.rotate(Math.toRadians(((hours > 12 ? hours - 12 : hours) * 30) + (minutes / 2)), rotateLocationX, rotateLocationY); // rotation, set center rotation              
-            g2d.drawImage(trad_h.getImage(), at, null); // Drawing the rotated image at the required drawing locations
-
-            // ìèíóòíàÿ ñòğåëêà
-            at.setToTranslation(drawLocationX, drawLocationY); // position x,y
-            at.rotate(Math.toRadians((minutes * 6) + (seconds / 10)), rotateLocationX, rotateLocationY); // rotation, set center rotation      
-            g2d.drawImage(trad_m.getImage(), at, null); // Drawing the rotated image at the required drawing locations
-
-            // òî÷êà ïî öåíòğó
-            g2d.drawImage(trad_dot.getImage(), drawLocationX, drawLocationY, null);
-
-            // ñåêóíäíàÿ ñòğåëêà
-            if(SecondsShow){
-            at.setToTranslation(drawLocationX, drawLocationY); // position x,y
-            at.rotate(Math.toRadians(seconds * 6), rotateLocationX, rotateLocationY); // rotation, set center rotation              
-            g2d.drawImage(trad_s.getImage(), at, null); // Drawing the rotated image at the required drawing locations
-            }
-            
-          //TODO â ÷àñû äîáàâèòü îòñ÷¸ò âğåìåíè 
-            
-
-            Toolkit.getDefaultToolkit().sync();
-            g.dispose();
-        }
-            
-   
-            
-        });
-        
-           
  
-        	setType(Type.UTILITY); // óáåğ¸ì èêîíêó èç ïàíåëè çàäà÷
+        	//setType(Type.UTILITY); // ÑƒĞ±ĞµÑ€Ñ‘Ğ¼ Ğ¸ĞºĞ¾Ğ½ĞºÑƒ Ğ¸Ğ· Ğ¿Ğ°Ğ½ĞµĞ»Ğ¸ Ğ·Ğ°Ğ´Ğ°Ñ‡
         	
-            setUndecorated(true);//îòêëş÷èì ñòàíäàğòíûå äåêîğàöèè ÎÑ
-            setSize(trad.getIconWidth(), trad.getIconHeight()); // óñòàíîâêà ğàçìåğà îêíà ïî ğàçìåğó ÷àñîâ
+            setUndecorated(true);//Ğ¾Ñ‚ĞºĞ»ÑÑ‡Ğ¸Ğ¼ ÑÑ‚Ğ°Ğ½Ğ´Ğ°Ñ€Ñ‚Ğ½Ñ‹Ğµ Ğ´ĞµĞºĞ¾Ñ€Ğ°Ñ†Ğ¸Ğ¸ ĞĞ¡
+            setSize(trad.getIconWidth(), trad.getIconHeight()); // ÑƒÑÑ‚Ğ°Ğ½Ğ¾Ğ²ĞºĞ° Ñ€Ğ°Ğ·Ğ¼ĞµÑ€Ğ° Ğ¾ĞºĞ½Ğ° Ğ¿Ğ¾ Ñ€Ğ°Ğ·Ğ¼ĞµÑ€Ñƒ Ñ‡Ğ°ÑĞ¾Ğ²
             
             
             setLocation(WindowsXPos, WindowsYPos);
-            AWTUtilities.setWindowOpaque(this, false);//ñäåëàòü îêíî ïîëóïğîçğà÷íûì
-           
-          
-            setVisible(true); // äåëàåì âèäèìûì
-            toBack(); // âñåãäà ïîçàäè âñåõ îêîí
-
+            AWTUtilities.setWindowOpaque(this, false);//ÑĞ´ĞµĞ»Ğ°Ñ‚ÑŒ Ğ¾ĞºĞ½Ğ¾ Ğ¿Ğ¾Ğ»ÑƒĞ¿Ñ€Ğ¾Ğ·Ñ€Ğ°Ñ‡Ğ½Ñ‹Ğ¼
             
-            // çàïóñê ïîòîêà,â í¸ì áóäåò âûçûâàòüñÿ ïğîğèñîâêà àíàëîãîâûõ ÷àñîâ
-         // FIXME  ïîòîê: ïğàâèëüíî ëè???
-             (new Thread(this)).start();
+            add(new DrawClock());// Ğ´Ğ¾Ğ±Ğ°Ğ²Ğ»ÑÑ Ğ¿Ñ€Ğ¾Ñ€Ğ¸ÑĞ¾Ğ²ĞºÑƒ Ñ‡Ğ°ÑĞ¾Ğ²
+            
+            setVisible(true); // Ğ´ĞµĞ»Ğ°ĞµĞ¼ Ğ²Ğ¸Ğ´Ğ¸Ğ¼Ñ‹Ğ¼
+            
+            toBack(); // Ğ²ÑĞµĞ³Ğ´Ğ° Ğ¿Ğ¾Ğ·Ğ°Ğ´Ğ¸ Ğ²ÑĞµÑ… Ğ¾ĞºĞ¾Ğ½
+
+            resource ();
 
     }
     
     
-    @SuppressWarnings("deprecation")
-	@Override
-	public void run() {
-
-		while (running) {
-
-			repaint();
-			try {
-				//åñëè ïîêàçûâàòü ñåêóíäíóş ñòğåëêó òî çàäåğæêà ñåêóíäó,åñëè íåïîêàçûâàòü òî ìèíóòó
-				Thread.sleep(SecondsShow ? 1000 : 1000 * 60);
-			} catch (InterruptedException e) {
-			}
-
-			// åñëè âğåìÿ îò 23:00 äî 8-ìè óòğà
-			if (hours >= 23 || hours < 8) {
-				// çàïóñê òàéìåğà äèàëîãà âûêëş÷åíèÿ
-				if (!tDialog.isRunning()) {
-					System.out.println("çàïóñê òàéìåğà äèàëîãà âûêëş÷åíèÿ");
-					tDialog.start();
-				}
-			}
-
-		}
-		// FIXME  ïîòîê: ïğàâèëüíî ëè???
-		Thread.currentThread().destroy();
-		
-
-	}
+   
+    
+    
+    
+    
     
     private void initPopupMenu(){
     	
@@ -282,15 +192,10 @@ public class MainFrame extends JFrame implements ActionListener ,Runnable{ //Íàñ
 
 		String action = e.getActionCommand();
 		
-		if (action == "Seconds Show") {
-			
+		if (action == "Seconds Show") {			
 			SecondsShow = ((JCheckBoxMenuItem) e.getSource()).isSelected();
-			Settings.save();
-			// FIXME  ïîòîê: ïğàâèëüíî ëè???
-			running = false;
-			running = true;
-			(new Thread(this)).start();
-	
+			repaint();
+			Settings.save();		
 
 		}
 
@@ -324,17 +229,193 @@ public class MainFrame extends JFrame implements ActionListener ,Runnable{ //Íàñ
 	private void shutdown() {
 
 		System.out.println("shutdown");
-		// -s âûêëş÷åíèå êîìïüşòåğà
-		// -f ïğèíóäèòåëüíî çàâåğøèò ğàáîòó ëşáîãî ïğèëîæåíèÿ
-		// -t 60 îòñğî÷èòü âûêëş÷åíèå ÏÊ íà 60 ñåêóíä
+		// -s Ğ²Ñ‹ĞºĞ»ÑÑ‡ĞµĞ½Ğ¸Ğµ ĞºĞ¾Ğ¼Ğ¿ÑŒÑÑ‚ĞµÑ€Ğ°
+		// -f Ğ¿Ñ€Ğ¸Ğ½ÑƒĞ´Ğ¸Ñ‚ĞµĞ»ÑŒĞ½Ğ¾ Ğ·Ğ°Ğ²ĞµÑ€ÑˆĞ¸Ñ‚ Ñ€Ğ°Ğ±Ğ¾Ñ‚Ñƒ Ğ»ÑĞ±Ğ¾Ğ³Ğ¾ Ğ¿Ñ€Ğ¸Ğ»Ğ¾Ğ¶ĞµĞ½Ğ¸Ñ
+		// -t 60 Ğ¾Ñ‚ÑÑ€Ğ¾Ñ‡Ğ¸Ñ‚ÑŒ Ğ²Ñ‹ĞºĞ»ÑÑ‡ĞµĞ½Ğ¸Ğµ ĞŸĞš Ğ½Ğ° 60 ÑĞµĞºÑƒĞ½Ğ´
 		
 		try {
-			// ÷òîáû íåáûëî ïğåäóïğåæäàşøåãî îêíà îò ÎÑ,ñòàâëş -t 00
+			// Ñ‡Ñ‚Ğ¾Ğ±Ñ‹ Ğ½ĞµĞ±Ñ‹Ğ»Ğ¾ Ğ¿Ñ€ĞµĞ´ÑƒĞ¿Ñ€ĞµĞ¶Ğ´Ğ°ÑÑˆĞµĞ³Ğ¾ Ğ¾ĞºĞ½Ğ° Ğ¾Ñ‚ ĞĞ¡,ÑÑ‚Ğ°Ğ²Ğ»Ñ -t 00
 			Runtime.getRuntime().exec("shutdown  -s -f -t 00 ");
 		} catch (IOException e) {}
 		
 		exit();
 		 
+	}
+	
+	
+	void resource (){
+		
+		
+		System.out.println("resource");
+		
+		String message = "";
+		
+		CodeSource src = MainFrame.class.getProtectionDomain().getCodeSource();
+		
+		URL jar = MainFrame.class.getProtectionDomain().getCodeSource().getLocation();
+		
+		message += src.toString();
+		//if (src != null) {
+		 // URL jar = src.getLocation();
+		  ZipInputStream stream = null;
+		try {
+			stream = new ZipInputStream(jar.openStream());
+			message += stream.available();
+		
+		//String outdir = args[1];
+		/* Now examine the ZIP file entries to find those you care about. */
+		// now iterate through each item in the stream. The get next
+        // entry call will return a ZipEntry for each file in the
+        // stream
+        ZipEntry entry;
+        while((entry = stream.getNextEntry())!=null)
+        {
+            String s = String.format("Entry: %s len %d added %TD",
+                            entry.getName(), entry.getSize(),
+                            new Date(entry.getTime()));
+            System.out.println(s);
+            message += s;
+            // Once we get the entry from the stream, the stream is
+            // positioned read to read the raw data, and we keep
+            // reading until read returns 0 or less.
+//            String outpath = outdir + "/" + entry.getName();
+//            FileOutputStream output = null;
+//            try
+//            {
+//                output = new FileOutputStream(outpath);
+//                int len = 0;
+//                while ((len = stream.read(buffer)) > 0)
+//                {
+//                    output.write(buffer, 0, len);
+//                }
+//            	
+//            }
+//            finally
+//            {
+//                // we must always close the output file
+//                if(output!=null) output.close();
+//            }
+        }
+        
+		} catch (IOException e) {}
+		
+//		} 
+//		else {
+//		   /* Fail... */
+//			System.out.println("Fail...");
+//			message += "Fail...";
+//		}
+		
+		
+		JOptionPane.showMessageDialog (null, message, "resource", JOptionPane.INFORMATION_MESSAGE);
+	}
+	
+	
+	
+	
+	public class DrawClock extends JComponent implements Runnable{
+
+
+		private static final long serialVersionUID = 1L;
+		
+		
+		public DrawClock() {
+
+			 setForeground ( Color.BLACK );
+             MoveAdapter moveAdapter = new MoveAdapter();
+             addMouseListener(moveAdapter);
+             addMouseMotionListener(moveAdapter);
+             // Ğ·Ğ°Ğ¿ÑƒÑĞº Ğ¿Ğ¾Ñ‚Ğ¾ĞºĞ°,Ğ² Ğ½Ñ‘Ğ¼ Ğ±ÑƒĞ´ĞµÑ‚ Ğ²Ñ‹Ğ·Ñ‹Ğ²Ğ°Ñ‚ÑŒÑÑ Ğ¿Ñ€Ğ¾Ñ€Ğ¸ÑĞ¾Ğ²ĞºĞ° Ğ°Ğ½Ğ°Ğ»Ğ¾Ğ³Ğ¾Ğ²Ñ‹Ñ… Ñ‡Ğ°ÑĞ¾Ğ²
+             // FIXME  Ğ¿Ğ¾Ñ‚Ğ¾Ğº: Ğ¿Ñ€Ğ°Ğ²Ğ¸Ğ»ÑŒĞ½Ğ¾ Ğ»Ğ¸???
+                 (new Thread(this)).start();
+		}
+		
+		
+
+   public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        RenderingHints rh = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        rh.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2d.setRenderingHints(rh);
+
+//        date = new Date();  // current time    
+//        hours = date.getHours();
+//        minutes = date.getMinutes();
+//        seconds = date.getSeconds();
+        
+        Calendar calendar = Calendar.getInstance();
+		hours = calendar.get(Calendar.HOUR);
+		minutes = calendar.get(Calendar.MINUTE);
+		seconds = calendar.get(Calendar.SECOND);
+		
+        int drawLocationX = (this.getWidth() - trad_h.getIconWidth()) / 2;
+        int drawLocationY = 1;
+        int rotateLocationX = trad_h.getIconWidth() / 2;
+        int rotateLocationY = trad_h.getIconHeight() / 2;
+        AffineTransform at = new AffineTransform();
+
+        // Ñ‡Ğ°ÑÑ‹
+        g2d.drawImage(trad.getImage(), 0, 0, null);
+
+        // Ñ‡Ğ°ÑĞ¾Ğ²Ğ°Ñ ÑÑ‚Ñ€ĞµĞ»ĞºĞ°
+        at.setToTranslation(drawLocationX, drawLocationY); // position x,y
+        at.rotate(Math.toRadians(((hours > 12 ? hours - 12 : hours) * 30) + (minutes / 2)), rotateLocationX, rotateLocationY); // rotation, set center rotation              
+        g2d.drawImage(trad_h.getImage(), at, null); // Drawing the rotated image at the required drawing locations
+
+        // Ğ¼Ğ¸Ğ½ÑƒÑ‚Ğ½Ğ°Ñ ÑÑ‚Ñ€ĞµĞ»ĞºĞ°
+        at.setToTranslation(drawLocationX, drawLocationY); // position x,y
+        at.rotate(Math.toRadians((minutes * 6) + (seconds / 10)), rotateLocationX, rotateLocationY); // rotation, set center rotation      
+        g2d.drawImage(trad_m.getImage(), at, null); // Drawing the rotated image at the required drawing locations
+
+        // Ñ‚Ğ¾Ñ‡ĞºĞ° Ğ¿Ğ¾ Ñ†ĞµĞ½Ñ‚Ñ€Ñƒ
+        g2d.drawImage(trad_dot.getImage(), drawLocationX, drawLocationY, null);
+
+    	
+        // ÑĞµĞºÑƒĞ½Ğ´Ğ½Ğ°Ñ ÑÑ‚Ñ€ĞµĞ»ĞºĞ°
+        if(SecondsShow){
+        at.setToTranslation(drawLocationX, drawLocationY); // position x,y
+        at.rotate(Math.toRadians(seconds * 6), rotateLocationX, rotateLocationY); // rotation, set center rotation              
+        g2d.drawImage(trad_s.getImage(), at, null); // Drawing the rotated image at the required drawing locations
+        }
+        
+      //TODO Ğ² Ñ‡Ğ°ÑÑ‹ Ğ´Ğ¾Ğ±Ğ°Ğ²Ğ¸Ñ‚ÑŒ Ğ¾Ñ‚ÑÑ‡Ñ‘Ñ‚ Ğ²Ñ€ĞµĞ¼ĞµĞ½Ğ¸ 
+        
+
+        Toolkit.getDefaultToolkit().sync();
+        g.dispose();
+    }
+   
+   
+	
+	public void run() {
+
+		while (running) {
+
+			repaint();
+			try {
+				//ĞµÑĞ»Ğ¸ Ğ¿Ğ¾ĞºĞ°Ğ·Ñ‹Ğ²Ğ°Ñ‚ÑŒ ÑĞµĞºÑƒĞ½Ğ´Ğ½ÑƒÑ ÑÑ‚Ñ€ĞµĞ»ĞºÑƒ Ñ‚Ğ¾ Ğ·Ğ°Ğ´ĞµÑ€Ğ¶ĞºĞ° ÑĞµĞºÑƒĞ½Ğ´Ñƒ,ĞµÑĞ»Ğ¸ Ğ½ĞµĞ¿Ğ¾ĞºĞ°Ğ·Ñ‹Ğ²Ğ°Ñ‚ÑŒ Ñ‚Ğ¾ Ğ¼Ğ¸Ğ½ÑƒÑ‚Ñƒ
+				// FIXME  Ğ¿Ğ¾Ñ‚Ğ¾Ğº: Ğ¾ÑÑ‚Ğ°Ğ½Ğ°Ğ²Ğ»Ğ¸Ğ²Ğ°ĞµÑ‚ÑÑ ĞµÑĞ»Ğ¸ Ğ¸Ğ·Ğ¼ĞµĞ½Ğ¸Ñ‚ÑŒ SecondsShow
+				//Thread.sleep(SecondsShow ? 1000 : 1000 * 60);
+				Thread.sleep(1000 );
+			} catch (InterruptedException e) {}
+
+			// ĞµÑĞ»Ğ¸ Ğ²Ñ€ĞµĞ¼Ñ Ğ¾Ñ‚ 23:00 Ğ´Ğ¾ 8-Ğ¼Ğ¸ ÑƒÑ‚Ñ€Ğ°
+			if (hours >= 23 && hours < 8) {
+				// Ğ·Ğ°Ğ¿ÑƒÑĞº Ñ‚Ğ°Ğ¹Ğ¼ĞµÑ€Ğ° Ğ´Ğ¸Ğ°Ğ»Ğ¾Ğ³Ğ° Ğ²Ñ‹ĞºĞ»ÑÑ‡ĞµĞ½Ğ¸Ñ
+				if (!tDialog.isRunning()) {
+					System.out.println("Ğ·Ğ°Ğ¿ÑƒÑĞº Ñ‚Ğ°Ğ¹Ğ¼ĞµÑ€Ğ° Ğ´Ğ¸Ğ°Ğ»Ğ¾Ğ³Ğ° Ğ²Ñ‹ĞºĞ»ÑÑ‡ĞµĞ½Ğ¸Ñ");
+					tDialog.start();
+				}
+			}
+
+		}
+		// FIXME  Ğ¿Ğ¾Ñ‚Ğ¾Ğº: Ğ¿Ñ€Ğ°Ğ²Ğ¸Ğ»ÑŒĞ½Ğ¾ Ğ»Ğ¸???
+		Thread.currentThread().interrupt();
+		
+
+	}
+
 	}
 
 
@@ -346,33 +427,33 @@ public class MainFrame extends JFrame implements ActionListener ,Runnable{ //Íàñ
 
 			public  void run() {
 
-				Toolkit.getDefaultToolkit().beep();// ñèãíàë
-				// âêëş÷àş çâóê òèêàíüÿ
+				Toolkit.getDefaultToolkit().beep();// ÑĞ¸Ğ³Ğ½Ğ°Ğ»
+				// Ğ²ĞºĞ»ÑÑ‡Ğ°Ñ Ğ·Ğ²ÑƒĞº Ñ‚Ğ¸ĞºĞ°Ğ½ÑŒÑ
 				Sound tiktak = new Sound("clock-ticking-3.wav");
 
 				
 
-				String title = "Âíèìàíèå!";
-				String message = "Âûêëş÷åíèå êîìïüşòåğà ÷åğåç 5 ìèíóò!";
-				Object[] options = { "Îòìåíèòü" };
+				String title = "Ğ’Ğ½Ğ¸Ğ¼Ğ°Ğ½Ğ¸Ğµ!";
+				String message = "Ğ’Ñ‹ĞºĞ»ÑÑ‡ĞµĞ½Ğ¸Ğµ ĞºĞ¾Ğ¼Ğ¿ÑŒÑÑ‚ĞµÑ€Ğ° Ñ‡ĞµÑ€ĞµĞ· 5 Ğ¼Ğ¸Ğ½ÑƒÑ‚!";
+				Object[] options = { "ĞÑ‚Ğ¼ĞµĞ½Ğ¸Ñ‚ÑŒ" };
 				
-				//TODO â äèàëîã äîáàâèòü îòñ÷¸ò âğåìåíè
+				//TODO Ğ² Ğ´Ğ¸Ğ°Ğ»Ğ¾Ğ³ Ğ´Ğ¾Ğ±Ğ°Ğ²Ğ¸Ñ‚ÑŒ Ğ¾Ñ‚ÑÑ‡Ñ‘Ñ‚ Ğ²Ñ€ĞµĞ¼ĞµĞ½Ğ¸
 				JOptionPane pane = new JOptionPane(message,
 						JOptionPane.WARNING_MESSAGE, JOptionPane.CANCEL_OPTION,
 						crazy, options);
 				JDialog dialog = pane.createDialog(title);
 				
 				
-				dialog.setAlwaysOnTop(true);// äèàëîã âñåãäà ïîâåğõ âñåõ îêîí
-				dialog.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);// çàïğåøàş çàêğûòèå
-				dialog.setVisible(true);// ïîêàçàòü äèàëîã
+				dialog.setAlwaysOnTop(true);// Ğ´Ğ¸Ğ°Ğ»Ğ¾Ğ³ Ğ²ÑĞµĞ³Ğ´Ğ° Ğ¿Ğ¾Ğ²ĞµÑ€Ñ… Ğ²ÑĞµÑ… Ğ¾ĞºĞ¾Ğ½
+				dialog.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);// Ğ·Ğ°Ğ¿Ñ€ĞµÑˆĞ°Ñ Ğ·Ğ°ĞºÑ€Ñ‹Ñ‚Ğ¸Ğµ
+				dialog.setVisible(true);// Ğ¿Ğ¾ĞºĞ°Ğ·Ğ°Ñ‚ÑŒ Ğ´Ğ¸Ğ°Ğ»Ğ¾Ğ³
 				
 
-				if (pane.getValue() == "Îòìåíèòü") {
-					System.out.println("îòìåíà îòêëş÷åíèÿ");
+				if (pane.getValue() == "ĞÑ‚Ğ¼ĞµĞ½Ğ¸Ñ‚ÑŒ") {
+					System.out.println("Ğ¾Ñ‚Ğ¼ĞµĞ½Ğ° Ğ¾Ñ‚ĞºĞ»ÑÑ‡ĞµĞ½Ğ¸Ñ");
 					tShutdown.stop();
 					tiktak.stop();
-					// -a îòìåíà îòêëş÷åíèÿ
+					// -a Ğ¾Ñ‚Ğ¼ĞµĞ½Ğ° Ğ¾Ñ‚ĞºĞ»ÑÑ‡ĞµĞ½Ğ¸Ñ
 					// Runtime.getRuntime().exec("shutdown -a");
 
 				}
@@ -439,10 +520,10 @@ public class MainFrame extends JFrame implements ActionListener ,Runnable{ //Íàñ
 
 		static final Properties props = new Properties();
 
-		// ïîëó÷àåì äîìàøíèé êàòàëîã ïîëüçîâàòåëÿ
+		// Ğ¿Ğ¾Ğ»ÑƒÑ‡Ğ°ĞµĞ¼ Ğ´Ğ¾Ğ¼Ğ°ÑˆĞ½Ğ¸Ğ¹ ĞºĞ°Ñ‚Ğ°Ğ»Ğ¾Ğ³ Ğ¿Ğ¾Ğ»ÑŒĞ·Ğ¾Ğ²Ğ°Ñ‚ĞµĞ»Ñ
 		static final String homeDir = System.getProperty("user.home");
-		// îíè îáúÿâëåíû êàê final, òàê ÷òî ê íèì ìîæíî ïîëó÷èòü äîñòóï
-		// âî âíóòğåííåì àíîíèìíîì êëàññå íèæå
+		// Ğ¾Ğ½Ğ¸ Ğ¾Ğ±ÑŠÑĞ²Ğ»ĞµĞ½Ñ‹ ĞºĞ°Ğº final, Ñ‚Ğ°Ğº Ñ‡Ñ‚Ğ¾ Ğº Ğ½Ğ¸Ğ¼ Ğ¼Ğ¾Ğ¶Ğ½Ğ¾ Ğ¿Ğ¾Ğ»ÑƒÑ‡Ğ¸Ñ‚ÑŒ Ğ´Ğ¾ÑÑ‚ÑƒĞ¿
+		// Ğ²Ğ¾ Ğ²Ğ½ÑƒÑ‚Ñ€ĞµĞ½Ğ½ĞµĞ¼ Ğ°Ğ½Ğ¾Ğ½Ğ¸Ğ¼Ğ½Ğ¾Ğ¼ ĞºĞ»Ğ°ÑÑĞµ Ğ½Ğ¸Ğ¶Ğµ
 		static final String settingsFilename = homeDir + File.separator
 				+ "MyClock.properties";
 
@@ -450,15 +531,15 @@ public class MainFrame extends JFrame implements ActionListener ,Runnable{ //Íàñ
 			
 			System.out.println(settingsFilename);
 
-			// Çàãğóçêà ñîõğàíåííûõ íàñòğîåê
+			// Ğ—Ğ°Ğ³Ñ€ÑƒĞ·ĞºĞ° ÑĞ¾Ñ…Ñ€Ğ°Ğ½ĞµĞ½Ğ½Ñ‹Ñ… Ğ½Ğ°ÑÑ‚Ñ€Ğ¾ĞµĞº
 			try {
 				FileInputStream input = new FileInputStream(settingsFilename);
 				props.load(input);
 				input.close();
 			} catch (Exception ignore) {
-				// èñêëş÷åíèå èãíîğèğóåòñÿ, ïîñêîëüêó îæèäàëîñü, ÷òî
-				// ôàéë óñòàíîâî÷íûõ ïàğàìåòğîâ èíîãäà ìîæåò íå ñóùåñòâîâàòü
-				// ïğè ïåğâîì çàïóñêå ïğèëîæåíèÿ îí òî÷íî íå áóäåò ñóùåñòâîâàòü
+				// Ğ¸ÑĞºĞ»ÑÑ‡ĞµĞ½Ğ¸Ğµ Ğ¸Ğ³Ğ½Ğ¾Ñ€Ğ¸Ñ€ÑƒĞµÑ‚ÑÑ, Ğ¿Ğ¾ÑĞºĞ¾Ğ»ÑŒĞºÑƒ Ğ¾Ğ¶Ğ¸Ğ´Ğ°Ğ»Ğ¾ÑÑŒ, Ñ‡Ñ‚Ğ¾
+				// Ñ„Ğ°Ğ¹Ğ» ÑƒÑÑ‚Ğ°Ğ½Ğ¾Ğ²Ğ¾Ñ‡Ğ½Ñ‹Ñ… Ğ¿Ğ°Ñ€Ğ°Ğ¼ĞµÑ‚Ñ€Ğ¾Ğ² Ğ¸Ğ½Ğ¾Ğ³Ğ´Ğ° Ğ¼Ğ¾Ğ¶ĞµÑ‚ Ğ½Ğµ ÑÑƒÑ‰ĞµÑÑ‚Ğ²Ğ¾Ğ²Ğ°Ñ‚ÑŒ
+				// Ğ¿Ñ€Ğ¸ Ğ¿ĞµÑ€Ğ²Ğ¾Ğ¼ Ğ·Ğ°Ğ¿ÑƒÑĞºĞµ Ğ¿Ñ€Ğ¸Ğ»Ğ¾Ğ¶ĞµĞ½Ğ¸Ñ Ğ¾Ğ½ Ñ‚Ğ¾Ñ‡Ğ½Ğ¾ Ğ½Ğµ Ğ±ÑƒĞ´ĞµÑ‚ ÑÑƒÑ‰ĞµÑÑ‚Ğ²Ğ¾Ğ²Ğ°Ñ‚ÑŒ
 			}
 
 			try {
@@ -475,7 +556,7 @@ public class MainFrame extends JFrame implements ActionListener ,Runnable{ //Íàñ
 
 		public static void save() {
 
-			// Ñîõğàíÿåì íàñòğîéêè
+			// Ğ¡Ğ¾Ñ…Ñ€Ğ°Ğ½ÑĞµĞ¼ Ğ½Ğ°ÑÑ‚Ñ€Ğ¾Ğ¹ĞºĞ¸
 			props.setProperty("WindowsXPos", String.valueOf(WindowsXPos));
 			props.setProperty("WindowsYPos", String.valueOf(WindowsYPos));
 			props.setProperty("SecondsShow", String.valueOf(SecondsShow));
@@ -486,8 +567,8 @@ public class MainFrame extends JFrame implements ActionListener ,Runnable{ //Íàñ
 				props.store(output, "Saved settings");
 				output.close();
 			} catch (Exception ignore) {
-				// åñëè íå ïîëó÷àåòñÿ ñîõğàíèòü íàñòğîéêè,
-				// â ñëåäóşùèé ğàç áóäóò èñïîëüçîâàòüñÿ íàñòğîéêè ïî óìîë÷àíèş
+				// ĞµÑĞ»Ğ¸ Ğ½Ğµ Ğ¿Ğ¾Ğ»ÑƒÑ‡Ğ°ĞµÑ‚ÑÑ ÑĞ¾Ñ…Ñ€Ğ°Ğ½Ğ¸Ñ‚ÑŒ Ğ½Ğ°ÑÑ‚Ñ€Ğ¾Ğ¹ĞºĞ¸,
+				// Ğ² ÑĞ»ĞµĞ´ÑƒÑÑ‰Ğ¸Ğ¹ Ñ€Ğ°Ğ· Ğ±ÑƒĞ´ÑƒÑ‚ Ğ¸ÑĞ¿Ğ¾Ğ»ÑŒĞ·Ğ¾Ğ²Ğ°Ñ‚ÑŒÑÑ Ğ½Ğ°ÑÑ‚Ñ€Ğ¾Ğ¹ĞºĞ¸ Ğ¿Ğ¾ ÑƒĞ¼Ğ¾Ğ»Ñ‡Ğ°Ğ½Ğ¸Ñ
 			}
 
 		}
@@ -516,7 +597,7 @@ public class MainFrame extends JFrame implements ActionListener ,Runnable{ //Íàñ
 				// Open audio clip and load samples from the audio input stream.
 				clip.open(audioIn);
 				clip.loop(Clip.LOOP_CONTINUOUSLY);
-				//FIXME çâóê íà÷èíàåò èãğàòü áåç ñòàğòà o_O
+				//FIXME Ğ·Ğ²ÑƒĞº Ğ½Ğ°Ñ‡Ğ¸Ğ½Ğ°ĞµÑ‚ Ğ¸Ğ³Ñ€Ğ°Ñ‚ÑŒ Ğ±ĞµĞ· ÑÑ‚Ğ°Ñ€Ñ‚Ğ° o_O
 				// clip.start();
 			} catch (UnsupportedAudioFileException e) {
 				e.printStackTrace();
